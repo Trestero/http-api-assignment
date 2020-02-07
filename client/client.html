@@ -5,9 +5,90 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
-  <script type="text/babel">
 
+  <script type="text/babel">
+    const sendButton = document.querySelector('#send');
+    const pageToGet = document.querySelector('#page');
+    const format = document.querySelector('#type');
+
+    const parseJSON = (xhr, content) => {
+      if(xhr.response){
+        const obj = JSON.parse(xhr.response);
+        console.dir(obj);
+
+        if(obj.message) {
+            content.innerHTML += `<p>$Message: {obj.message}</p>`;
+        }
+        if(obj.id) {
+            content.innerHTML += `<p>ID: ${obj.id}</p>`;
+        }
+      }
+    };
+
+    const parseXML = (xhr, content) => {
+        const msg = xhr.responseXML.querySelector('message').textContent;
+    }
+
+    const handleResponse = (xhr, parseResponse) => {
+      const content = document.querySelector('#content');
+
+      switch (xhr.status) {
+        case 200:
+          content.innerHTML = '<b>Success</b>';
+          break;
+        case 201:
+          content.innerHTML = '<b>Created</b>';
+          break;
+        case 204:
+          content.innerHTML = '<b>Updated (No Content)</b>';
+          break;
+        case 400:
+          content.innerHTML = '<b>Bad Request</b>';
+          break;
+        case 403:
+          content.innerHTML = '<b>Bad Request</b>';
+          break;
+        case 500:
+            content.innerHTML = '<b>Internal Server Error</b>'
+          break;
+        default:
+          content.innerHTML = '<b>Status Code Not Implemented By Client</b>';
+          break;
+      }
+
+        const type = xhr.getResponseHeader('Content-Type');
+        if (type === 'application/json')
+            parseJSON(xhr, content);
+        else if (type === 'text/xml')
+            parseXML(xhr, content);        
+    };
+
+    const sendMessage = (e, page, type) => {
+      e.preventDefault();
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', `${page}`);
+      xhr.setRequestHeader('Accept', '${type}');
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+      xhr.onload = () => handleResponse(xhr);
+      const formData = `page=${page}`;
+
+      xhr.send(formData);
+
+      return false;
+    };
+
+    const send = (e) => {
+        sendMessage(e, pageToGet.value, type.value);
+    }
+    const init = () => {
+      sendButton.addEventListener('click', send);
+    };
+
+    window.onload = init;
   </script>
+    
 </head>
 <body>
   <section id="top">
