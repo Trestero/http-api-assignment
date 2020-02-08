@@ -1,3 +1,4 @@
+const url = require('url');
 const formatHandler = require('./responseFormatting.js');
 
 const getSuccess = (request, response) => {
@@ -8,22 +9,39 @@ const getSuccess = (request, response) => {
 };
 
 const getBadRequest = (request, response) => {
+  const queryObj = url.parse(request.url, true).query;
   // default to failure, will be corrected if ?valid=true is present
-  const code = 400;
-  const output = {
+  let code = 400;
+  let output = {
     message: 'Missing valid query parameter set to true.',
     id: 'badRequest',
   };
+    // if valid, change properties to be successful
+  if (queryObj.valid === 'true') {
+    code = 200;
+    output = {
+      message: 'This request has the required parameters.',
+    };
+  }
+
   return formatHandler.respondFormatted(request, response, code, output);
 };
 
 const getUnauthorized = (request, response) => {
+  const queryObj = url.parse(request.url, true).query;
   // default to failure, will be corrected if ?loggedIn=yes is present
-  const code = 400;
-  const output = {
+  let code = 401;
+  let output = {
     message: 'Missing loggedIn query parameter set to yes.',
     id: 'unauthorized',
   };
+    // if valid, change properties to be successful
+  if (queryObj.loggedIn === 'yes') {
+    code = 200;
+    output = {
+      message: 'You have successfully viewed the content.',
+    };
+  }
   return formatHandler.respondFormatted(request, response, code, output);
 };
 

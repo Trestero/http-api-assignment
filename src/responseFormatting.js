@@ -29,19 +29,19 @@ const respondFormatted = (request, response, status, content) => {
   // Format the message body first
 
 
-  let [contentType = 'application/json'] = request.headers.accept.split(',');
-  contentType = 'application/json';
-
+  const acceptedTypes = request.headers.accept.split(',');
+  let contentType = 'application/json';
   let responseText = null;
-  console.dir(contentType);
 
-  if (contentType === 'application/json') {
+  if (acceptedTypes[0] === 'application/json') {
     responseText = formatResponseAsJSON(content);
-  } else if (contentType === 'text/xml') {
+  } else if (acceptedTypes[0] === 'text/xml') {
     responseText = formatResponseAsXML(content);
+    contentType = 'text/xml';
   } else { // default to JSON
     responseText = formatResponseAsJSON(content);
   }
+
   // Send back the response
   response.writeHead(status, { 'Content-Type': contentType });
   response.write(responseText);

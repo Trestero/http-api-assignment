@@ -7,24 +7,9 @@ const responseHandler = require('./requestResponses.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
-/* const handleGet = (request, response, parsedUrl) => {
-  switch (parsedUrl.pathname) {
-    default:
-      responseHandler.getNotFound(request, response);
-      break;
-  }
-  if (parsedUrl.pathname === '/success') {
-
-  } else {
-  }
-}; */
-
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
-    console.dir(parsedUrl.pathname);
-  /*  if (request.method === 'GET') {
-    handleGet(request, response, parsedUrl);
-  } else { */
+
   switch (parsedUrl.pathname) {
     case '/style.css':
       htmlHandler.getCSS(request, response);
@@ -57,7 +42,6 @@ const onRequest = (request, response) => {
       responseHandler.getNotFound(request, response);
       break;
   }
-  // }
 };
 
 http.createServer(onRequest).listen(port);

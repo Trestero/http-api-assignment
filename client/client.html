@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <title>Our simple HTTP server</title>
+    <meta charset='utf-8'/>
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
@@ -11,13 +12,14 @@
     const pageToGet = document.querySelector('#page');
     const format = document.querySelector('#type');
 
+// Parses JSON return and adds it to content field
     const parseJSON = (xhr, content) => {
       if(xhr.response){
         const obj = JSON.parse(xhr.response);
-        console.dir(obj);
+          console.dir(obj);
 
         if(obj.message) {
-            content.innerHTML += `<p>$Message: {obj.message}</p>`;
+            content.innerHTML += `<p>Message: ${obj.message}</p>`;
         }
         if(obj.id) {
             content.innerHTML += `<p>ID: ${obj.id}</p>`;
@@ -25,60 +27,78 @@
       }
     };
 
+// Parses XML return and adds it to content field
     const parseXML = (xhr, content) => {
-        const msg = xhr.responseXML.querySelector('message').textContent;
+        console.dir(xhr.responseXML.querySelector('response'));
+        const msg = xhr.responseXML.querySelector('message');
+        const id = xhr.responseXML.querySelector('id');
+        
+        if(msg) {
+            content.innerHTML += `<p>Message: ${msg.textContent}</p>`;
+        }
+        if(id) {
+            content.innerHTML += `<p>ID: ${id.textContent}</p>`;
+        }
     }
 
+    // Shows status code received from the server, prints JSON/XML response
     const handleResponse = (xhr, parseResponse) => {
       const content = document.querySelector('#content');
 
+        // Show the received status code as the first part of content
       switch (xhr.status) {
         case 200:
           content.innerHTML = '<b>Success</b>';
           break;
-        case 201:
-          content.innerHTML = '<b>Created</b>';
-          break;
-        case 204:
-          content.innerHTML = '<b>Updated (No Content)</b>';
-          break;
         case 400:
           content.innerHTML = '<b>Bad Request</b>';
           break;
+        case 401:
+          content.innerHTML = '<b>Unauthorized</b>';
+          break;
         case 403:
-          content.innerHTML = '<b>Bad Request</b>';
+          content.innerHTML = '<b>Forbidden</b>';
+          break;
+        case 404:
+          content.innerHTML = '<b>Resource Not Found</b>';
           break;
         case 500:
             content.innerHTML = '<b>Internal Server Error</b>'
+          break;
+        case 501:
+          content.innerHTML = '<b>Not Implemented</b>';
           break;
         default:
           content.innerHTML = '<b>Status Code Not Implemented By Client</b>';
           break;
       }
-
+        
+        // display according to data type and also display what type was received
         const type = xhr.getResponseHeader('Content-Type');
         if (type === 'application/json')
             parseJSON(xhr, content);
         else if (type === 'text/xml')
-            parseXML(xhr, content);        
+            parseXML(xhr, content);   
+        content.innerHTML += `<p>Content Type Received: ${type}</p>`;
     };
 
+// Function that actually sends the GET to the server
     const sendMessage = (e, page, type) => {
       e.preventDefault();
 
       const xhr = new XMLHttpRequest();
       xhr.open('GET', `${page}`);
-      xhr.setRequestHeader('Accept', '${type}');
+      xhr.setRequestHeader('Accept', `${type}`);
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
       xhr.onload = () => handleResponse(xhr);
-      const formData = `page=${page}`;
 
-      xhr.send(formData);
+      xhr.send();
 
       return false;
     };
 
+// Reads the two dropdown values and sends an appropriate GET request
     const send = (e) => {
         sendMessage(e, pageToGet.value, type.value);
     }
